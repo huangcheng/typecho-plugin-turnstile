@@ -3,29 +3,29 @@
 namespace TypechoPlugin\Turnstile;
 
 use Typecho\Plugin\PluginInterface;
-use Typecho\Widget;
 use Typecho\Widget\Helper\Form;
 use Typecho\Widget\Helper\Form\Element\Text;
 use Typecho\Widget\Helper\Form\Element\Password;
 use Widget\Options;
 use Widget\User;
+use Widget\Notice;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
 /**
- * Add Cloudflare Turnstile to Your Typecho Login Form.
- *
+ * 使用 Cloudflare Turnstile 保护登录
  * @package Turnstile
  * @author HUANG Cheng
- * @version 1.0.0
+ * @version 1.0.1
  * @link https://cheng.sh
  */
 class Plugin implements PluginInterface
 {
     public static string $Name = 'Turnstile';
     public static string $TurnstileUrl = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+    public static string $TurnstileScript = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
     /**
      * Activate plugin method, if activated failed, throw exception will disable this plugin.
      */
@@ -70,7 +70,7 @@ class Plugin implements PluginInterface
 
     public static function render(): void
     {
-        echo '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>';
+        echo '<script src='.  Plugin::$TurnstileScript . '></script>';
         echo '
 <script>
    $(function () {               
@@ -107,7 +107,8 @@ class Plugin implements PluginInterface
         $cf_turnstile_response = $_REQUEST['cf-turnstile-response'];
 
         if (!is_string($cf_turnstile_response) || strlen($cf_turnstile_response) <= 0) {
-            Widget::widget('Widget_Notice')->set('请完成人机验证', 'error');
+            Notice::alloc()->set('请完成人机验证', 'error');
+
             $user->logout();
 
             return;
@@ -135,7 +136,8 @@ class Plugin implements PluginInterface
             return ;
         }
 
-        Widget::widget('Widget_Notice')->set('人机验证失败', 'error');
+        Notice::alloc()->set('人机验证失败', 'error');
+
         $user->logout();
     }
 }
